@@ -43,7 +43,7 @@
 
 <script>
 import router from '../router.js'
-const API_URL = 'http://localhost:5000/search/minneapolis/'
+const API_URL = 'http://localhost:5000/search/'
 export default {
   data: () => ({
         loading: false,
@@ -77,8 +77,15 @@ export default {
             this.activeResults = [];
             this.activeTerm = term;
             this.loading = true;
+            const test = this.url;
+            console.log(test);
+            
             const url = `${API_URL}${term}`;
-            fetch(url)
+            fetch(url, {
+                method: "POST",
+                body: JSON.stringify({url: test}),
+                headers: {'Content-Type': 'application/json'}
+                })
                 .then(res => res.json())
                 .then(json => {
                     this.activeResults = json.results;

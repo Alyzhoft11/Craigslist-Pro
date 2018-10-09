@@ -27,15 +27,16 @@ const API_URL = 'http://localhost:5000/search/'
     methods: {
       getStateUrls(state) {
         const stateAbbreviation = states[state.toUpperCase()];
+        console.log(stateAbbreviation);
         const url = `${API_URL}${stateAbbreviation}`
         fetch(url)
           .then(res => res.json())
           .then(json => {
-              this.urls = json.results
+            this.urls = json.results
           });
       },
       sendSingleSearch(url) {
-          Router.push({name: 'search', params: {url: url}});
+        Router.push({name: 'search', params: {url: url}});
       },
       sendAllSearch() {
         Router.push({name: 'search', params: {url: this.urls}});

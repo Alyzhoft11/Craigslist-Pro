@@ -3,9 +3,12 @@ const cors = require('cors');
 const morgan = require('morgan');
 const fetch = require('node-fetch');
 const cheerio = require('cheerio');
+const bodyParser = require('body-parser');
 
 const app = express();
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 app.use(morgan('tiny'));
 
@@ -14,10 +17,13 @@ function getStateResults(body) {
     const cities = $('ul.geo-site-list li');
     const cityNames = [];
 
+    console.log(cities);
+    
+
     cities.each((index, element) => {
         const city = $(element);
         const name = city.text();
-        const url = city.find('a').attr('href');
+        const url = city.find('a').attr('href');        
 
         cityNames.push({
             name,
@@ -69,9 +75,11 @@ app.get('/', (req, res) => {
     });
 });
 
-app.get('/search/:location/:search_term', (req, res) => {
-    const { location, search_term } = req.params;
-    const url = `https://${location}.craigslist.org/search/sss?query=${search_term}&sort=rel`
+app.post('/search/:search_term', (req, res) => {
+    const { search_term } = req.params;
+    console.log(req.body);
+    const locationURL = req.body.url.url
+    const url = `${locationURL}/search/sss?query=${search_term}&sort=rel`
     fetch(url)
         .then(res => res.text())
         .then(body => {
