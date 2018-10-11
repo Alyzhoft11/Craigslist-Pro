@@ -4,7 +4,7 @@
         <div class="container">
             <form @submit.prevent="addTerm">
                 <div class="form-group">
-                    <label for="term" class="col-sm-1-12 col-form-label">Term</label>
+                    <label for="term" class="col-sm-1-12 col-form-label">{{ name }}</label>
                     <div class="col-sm-1-12">
                         <input v-model="term" type="text" class="form-control" name="inputName" id="term" placeholder="Enter a Search Term">
                     </div>
@@ -52,10 +52,12 @@ export default {
         activeTerm: null,
         activeResults: [],
         hiddenResults: {},
-        url: []
+        url: [],
+        name: ''
     }),
     created() {
-        this.url = this.$route.params.url
+        this.url = this.$route.params.url;
+        this.name = this.$route.params.url.name;
     },
     mounted() {
         if (localStorage.terms) {
@@ -77,17 +79,16 @@ export default {
             this.activeResults = [];
             this.activeTerm = term;
             this.loading = true;
-            const test = this.url;
-            console.log(test);
-            
+
             const url = `${API_URL}${term}`;
             fetch(url, {
                 method: "POST",
-                body: JSON.stringify({url: test}),
+                body: JSON.stringify({url: this.url}),
                 headers: {'Content-Type': 'application/json'}
                 })
                 .then(res => res.json())
                 .then(json => {
+                    console.log(json.results);
                     this.activeResults = json.results;
                     this.loading = false;
                 });

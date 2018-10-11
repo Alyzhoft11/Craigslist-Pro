@@ -39,7 +39,11 @@ const API_URL = 'http://localhost:5000/search/'
         Router.push({name: 'search', params: {url: url}});
       },
       sendAllSearch() {
-        Router.push({name: 'search', params: {url: this.urls}});
+        const urlArrayObjects = this.urls;
+        const urls = urlArrayObjects.map(function(obj){
+          return obj.url;
+        });
+        Router.push({name: 'search', params: {url: urls}});
       },
     }
   };

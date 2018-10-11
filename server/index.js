@@ -15,10 +15,7 @@ app.use(morgan('tiny'));
 function getStateResults(body) {
     const $ = cheerio.load(body);
     const cities = $('ul.geo-site-list li');
-    const cityNames = [];
-
-    console.log(cities);
-    
+    const cityNames = [];    
 
     cities.each((index, element) => {
         const city = $(element);
@@ -32,6 +29,19 @@ function getStateResults(body) {
     });
     return cityNames
 }
+
+// async function test(requests){
+//     let Temp = [];
+//     let multiResults = [];
+//     multiResults = await Promise.all(requests)
+//                         .then(responses => responses.forEach(
+//                             response => response.text()
+//                             .then(body => {
+//                                 const results = getResults(body);
+//                                 Temp.push(...results);
+//                             })));
+//     return multiResults
+// }
 
 function getResults(body) {
     const $ = cheerio.load(body);
@@ -77,17 +87,61 @@ app.get('/', (req, res) => {
 
 app.post('/search/:search_term', (req, res) => {
     const { search_term } = req.params;
-    console.log(req.body);
-    const locationURL = req.body.url.url
-    const url = `${locationURL}/search/sss?query=${search_term}&sort=rel`
-    fetch(url)
-        .then(res => res.text())
-        .then(body => {
-            const results = getResults(body);
+    const urlData = req.body.url;
+    // let multiResults = [];
+
+
+    if (urlData.length > 1) {        
+        const fullURLData = urlData.map(url => `${url}/search/sss?query=${search_term}&sort=rel`)
+        let requests = fullURLData.map(url => fetch(url));
+
+        async function getAllResults(fullURLData, callback) {
+            let multiResults = []; 
+            for (let i = 0; i < fullURLData.length; i++) {
+                let data = await fetch(fullURLData[i])
+                    .then(res => res.text())
+                    .then(body => {
+                        const results = getResults(body);
+                        return results
+                    });
+                multiResults.push(...data);
+            }
+            callback(multiResults);
+        }
+
+        function respond(resultData){
             res.json({
-                results
+                resultData
             });
-        });
+        }
+
+        getAllResults(fullURLData, respond);        
+
+        // Promise.all(requests)
+        //     .then(responses => responses.forEach(
+        //         response => response.text()
+        //         .then(body => {
+        //             const results = getResults(body);
+        //             multiResults.push(...results);
+        //             i++
+        //             if(i == requests.length) {
+        //                 res.json({
+        //                     multiResults
+        //                 });
+        //             };                   
+        //         })));          
+    } else {
+        const locationURL = req.body.url.url
+        const url = `${locationURL}/search/sss?query=${search_term}&sort=rel`
+        fetch(url)
+            .then(res => res.text())
+            .then(body => {
+                const results = getResults(body);
+                res.json({
+                    results
+                });
+            });
+    }
 });
 
 app.get('/search/:state', (req, res) => {
@@ -117,5 +171,5 @@ app.use((error, req, res, next) => {
 });
 
 app.listen(5000, () => {
-    console.log('listening on port 5000');
+
 });
